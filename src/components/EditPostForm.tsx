@@ -1,66 +1,74 @@
 import React, { ChangeEvent, FC } from 'react'
-import Post from '../models/Post'
-
-
+import { Product } from '../models/Product'
 
 interface EditPostFormProps {
-  Modal: boolean
-  OnClickCloseModal: () => void
-  data: Post
-  ApdatePost: (NewPost: Post) => void
-  HandleToogleEdit: () => void
+	Modal: boolean
+	OnClickCloseModal: () => void
+	data: Product
+	ApdatePost: (NewPost: Product) => void
+	HandleToogleEdit: () => void
 }
 
+const initialState = {
+	title: '',
+	description: '', // Заменим info на description
+}
 
+export const EditPostForm: FC<EditPostFormProps> = ({
+	HandleToogleEdit,
+	OnClickCloseModal,
+	ApdatePost,
+	Modal,
+	data,
+}) => {
+	// Инициализация состояния из props
+	const [editPost, setEditPost] = React.useState<Product>({
+		...initialState,
+		...data, // Заполнение начальных значений данными из props
+	})
 
+	const handleSubmit: React.FormEventHandler<HTMLFormElement> = (
+		e: React.FormEvent<HTMLFormElement>
+	) => {
+		e.preventDefault()
 
-export const EditPostForm: FC<EditPostFormProps> = ({ HandleToogleEdit, OnClickCloseModal, ApdatePost, Modal, data }) => {
-  const [editPost, setEditPost] = React.useState<Post>(data)
+		const { title, description } = editPost
 
+		// Проверка, что оба поля заполнены
+		if (title && description) {
+			ApdatePost(editPost) // Обновление данных
+			HandleToogleEdit() // Закрытие редактора
+		}
+	}
 
-  const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log('handel change  >>>', e.target);
+	const HandleChange = (e: ChangeEvent<HTMLInputElement>) => {
+		const { name, value } = e.target
+		setEditPost({
+			...editPost,
+			[name]: value, // Обновление поля в editPost
+		})
+	}
 
-
-    const { title, info } = editPost
-
-    if (title && info) {
-      ApdatePost(editPost)
-      HandleToogleEdit()
-    }
-  };
-
-
-  const HandleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setEditPost({
-      ...editPost,
-      [name]: value
-    })
-  }
-
-
-
-
-
-  return (
-    <form style={{ display: `${Modal ? 'block' : 'none'}` }} onSubmit={handleSubmit}>
-      <input
-        value={editPost.title}
-        onChange={HandleChange}
-        placeholder='Заголовок'
-        name='title'
-      />
-      <input
-        value={editPost.info}
-        onChange={HandleChange}
-        placeholder='описание'
-        name='info'
-      />
-      <button onClick={OnClickCloseModal}>x</button>
-      <br />
-      <button>Подтвердить</button>
-    </form>
-  )
+	return (
+		<form
+			style={{ display: `${Modal ? 'flex' : 'none'}` }}
+			className='edit-form'
+			onSubmit={handleSubmit}
+		>
+			<input
+				value={editPost.title}
+				onChange={HandleChange}
+				placeholder='Заголовок'
+				name='title'
+			/>
+			<input
+				value={editPost.description} // Используем description вместо info
+				onChange={HandleChange}
+				placeholder='Описание'
+				name='description' // Имя поля теперь description
+			/>
+			<button onClick={OnClickCloseModal}>x</button>
+			<button>Подтвердить</button>
+		</form>
+	)
 }
